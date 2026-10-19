@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#176b45">
+<title>Berkah Alam - Kasir & Stok Beras</title>
+<style>
+:root{--green:#176b45;--green2:#e8f4ed;--ink:#17231c;--muted:#68756d;--line:#e4eae6;--bg:#f5f8f6;--white:#fff;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:var(--green);color:white;padding:20px 16px 17px;position:sticky;top:0;z-index:5}
+.brand{font-weight:800;font-size:21px;letter-spacing:.3px}.sub{font-size:12px;opacity:.85;margin-top:2px}
+main{max-width:760px;margin:auto;padding:14px 12px 92px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.stat,.panel{background:var(--white);border:1px solid var(--line);border-radius:15px;padding:14px}
+.stat small{color:var(--muted);display:block;font-size:12px}.stat strong{font-size:19px;display:block;margin-top:5px;overflow-wrap:anywhere}
+nav{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:#e9efeb;padding:5px;border-radius:13px;margin:12px 0}
+nav button{border:0;background:transparent;padding:10px 3px;border-radius:10px;font-size:12px;color:#536158;font-weight:650}
+nav button.active{background:white;color:var(--green);box-shadow:0 1px 4px #0001}
+h2{font-size:17px;margin:0 0 12px}h3{font-size:14px;margin:16px 0 8px}
+label{font-size:12px;color:var(--muted);display:block;margin:10px 0 5px}
+input,select{width:100%;padding:12px;border:1px solid #d7e0da;border-radius:10px;background:white;font:inherit;color:var(--ink);min-height:44px}
+button.primary{width:100%;border:0;background:var(--green);color:white;padding:13px;border-radius:11px;font-weight:750;font-size:14px;margin-top:12px}
+button.secondary{border:1px solid #d7e0da;background:white;color:var(--ink);padding:9px 11px;border-radius:9px;font-weight:650}
+button.danger{border:1px solid #f1c9c6;background:#fff7f6;color:var(--red);padding:8px 10px;border-radius:9px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.muted{color:var(--muted);font-size:12px}.money{font-weight:750}.green{color:var(--green)}
+.item{border-top:1px solid var(--line);padding:12px 0}.item:first-child{border-top:0}
+.item-title{font-weight:750}.pill{display:inline-block;background:var(--green2);color:var(--green);font-size:11px;padding:3px 8px;border-radius:20px}
+.empty{color:var(--muted);text-align:center;padding:22px 8px;font-size:13px}
+.hidden{display:none!important}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.notice{background:#fff8e8;border:1px solid #f2dfb5;padding:11px;border-radius:11px;font-size:12px;color:#72551b;margin-top:12px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+footer{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1px solid var(--line);padding:9px 14px calc(9px + env(safe-area-inset-bottom));text-align:center;font-size:11px;color:var(--muted)}
+@media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
+}
+</script>
+
+</head>
+<body>
+<header><div class="brand">🌾 BERKAH ALAM</div><div class="sub">Aplikasi sederhana toko beras</div></header>
+<main>
+<section class="stats">
+ <div class="stat"><small>Jenis beras</small><strong id="sProducts">0</strong></div>
+ <div class="stat"><small>Total stok (kg)</small><strong id="sStock">0</strong></div>
+ <div class="stat"><small>Omzet hari ini</small><strong id="sRevenue">Rp0</strong></div>
+ <div class="stat"><small>Laba kotor hari ini</small><strong id="sProfit" class="green">Rp0</strong></div>
+</section>
+<nav>
+ <button class="active" data-tab="home">Ringkasan</button>
+ <button data-tab="stock">Stok</button>
+ <button data-tab="sale">Penjualan</button>
+ <button data-tab="purchase">Pembelian</button>
+ <button data-tab="report">Rekap</button>
+</nav>
+<section id="home" class="panel">
+ <h2>Ringkasan usaha</h2>
+ <div class="row"><span class="muted">Modal barang terjual hari ini</span><b id="hCost">Rp0</b></div>
+ <div class="row" style="margin-top:10px"><span class="muted">Jumlah transaksi hari ini</span><b id="hCount">0</b></div>
+ <div class="row" style="margin-top:10px"><span class="muted">Total beras terjual</span><b id="hQty">0 kg</b></div>
+ <div class="notice">Catatan: laba kotor = omzet dikurangi modal barang yang terjual. Biaya operasional belum dikurangi.</div>
+ <h3>Stok menipis</h3><div id="lowStock"></div>
+</section>
+<section id="stock" class="panel hidden">
+ <h2>Tambah produk beras</h2>
+ <label>Nama / jenis beras</label><input id="pName" placeholder="Contoh: Ramos, IR64, Pandan Wangi">
+ <div class="two"><div><label>Harga beli per kg (Rp)</label><input id="pBuy" type="number" min="0" inputmode="numeric" placeholder="14000"></div><div><label>Harga jual per kg (Rp)</label><input id="pSell" type="number" min="0" inputmode="numeric" placeholder="15000"></div></div>
+ <label>Stok awal (kg)</label><input id="pQty" type="number" min="0" step="0.1" inputmode="decimal" placeholder="25">
+ <button class="primary" id="addProduct">Simpan produk</button>
+ <h3>Daftar stok</h3><div id="products"></div>
+</section>
+<section id="sale" class="panel hidden">
+ <h2>Catat penjualan</h2>
+ <label>Pilih beras</label><select id="saleProduct"><option value="">Pilih produk</option></select>
+ <label>Jumlah terjual (kg)</label><input id="saleQty" type="number" min="0.1" step="0.1" inputmode="decimal" value="1">
+ <div class="notice" id="salePreview">Pilih produk untuk melihat total penjualan dan perkiraan laba.</div>
+ <button class="primary" id="saveSale">Simpan penjualan</button>
+ <h3>Transaksi hari ini</h3><div id="todaySales"></div>
+</section>
+<section id="purchase" class="panel hidden">
+ <h2>Catat pembelian beras</h2>
+ <label>Ukuran kertas thermal printer</label><select id="paperWidth"><option value="58">Thermal 58 mm</option><option value="80">Thermal 80 mm</option></select>
+ <label>Nama pemasok / toko tempat membeli</label><input id="supplier" placeholder="Contoh: Agen Beras Makmur">
+ <label>Pilih jenis beras</label><select id="purchaseProduct"><option value="">Pilih produk</option></select>
+ <div class="two"><div><label>Jumlah dibeli (kg)</label><input id="purchaseQty" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="25"></div><div><label>Harga beli per kg (Rp)</label><input id="purchasePrice" type="number" min="1" inputmode="numeric" placeholder="14000"></div></div>
+ <label>Catatan tambahan (opsional)</label><input id="purchaseNote" placeholder="Contoh: pembayaran tunai">
+ <div class="notice" id="purchasePreview">Pilih produk dan isi jumlah untuk menghitung total pembelian.</div>
+ <button class="primary" id="savePurchase">Simpan pembelian & buat resi</button>
+ <h3>Riwayat pembelian</h3><div id="purchaseHistory"></div>
+ <div class="notice">Setiap pembelian yang disimpan otomatis menambah stok. Harga beli produk akan diperbarui mengikuti harga pembelian terakhir.</div>
+</section>
+<section id="report" class="panel hidden">
+ <h2>Rekap harian</h2>
+ <label>Pilih tanggal</label><input id="reportDate" type="date">
+ <div class="two" style="margin-top:12px">
+  <div class="stat"><small>Omzet</small><strong id="rRevenue">Rp0</strong></div>
+  <div class="stat"><small>Laba kotor</small><strong id="rProfit" class="green">Rp0</strong></div>
+  <div class="stat"><small>Modal terjual</small><strong id="rCost">Rp0</strong></div>
+  <div class="stat"><small>Jumlah terjual</small><strong id="rQty">0 kg</strong></div>
+ </div>
+ <h3>Rincian transaksi</h3><div id="reportSales"></div>
+ <div class="actions"><button class="secondary" id="exportCsv">Unduh rekap CSV</button><button class="secondary" id="backup">Cadangkan data</button></div>
+ <label style="margin-top:16px">Pulihkan data cadangan</label><input id="restoreFile" type="file" accept=".json,application/json">
+ <div class="notice">Data tersimpan di browser pada perangkat ini. Gunakan “Cadangkan data” secara berkala agar tidak hilang jika data browser terhapus atau ganti perangkat.</div>
+</section>
+</main>
+<footer>Data disimpan di perangkat ini • Berkah Alam</footer>
+<script>
+const KEY='berkahAlamStore_v1';
+let db={products:[],sales:[],purchases:[]};
+try{const saved=JSON.parse(localStorage.getItem(KEY));if(saved&&Array.isArray(saved.products)&&Array.isArray(saved.sales))db={...db,...saved,purchases:Array.isArray(saved.purchases)?saved.purchases:[]}}catch(e){}
+const $=id=>document.getElementById(id);
+const rupiah=n=>'Rp'+Math.round(Number(n)||0).toLocaleString('id-ID');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const persist=()=>localStorage.setItem(KEY,JSON.stringify(db));
+const daySales=date=>db.sales.filter(s=>s.date===date);
+const sum=(arr,key)=>arr.reduce((a,x)=>a+(Number(x[key])||0),0);
+function render(){
+ const ds=daySales(today()),rev=sum(ds,'revenue'),prof=sum(ds,'profit');
+ $('sProducts').textContent=db.products.length;
+ $('sStock').textContent=db.products.reduce((a,p)=>a+p.stock,0).toLocaleString('id-ID');
+ $('sRevenue').textContent=rupiah(rev);$('sProfit').textContent=rupiah(prof);
+ $('hCost').textContent=rupiah(sum(ds,'cost'));$('hCount').textContent=ds.length;
+ $('hQty').textContent=ds.reduce((a,s)=>a+s.qty,0).toLocaleString('id-ID')+' kg';
+ $('products').innerHTML=db.products.length?db.products.map(p=>`<div class="item"><div class="row"><div><div class="item-title">${esc(p.name)}</div><div class="muted">Beli ${rupiah(p.buy)}/kg • Jual ${rupiah(p.sell)}/kg</div></div><span class="pill">${p.stock} kg</span></div><div class="actions"><button class="secondary" onclick="restock('${p.id}')">+ Tambah stok</button><button class="secondary" onclick="editPrice('${p.id}')">Ubah harga</button><button class="danger" onclick="removeProduct('${p.id}')">Hapus</button></div></div>`).join(''):'<div class="empty">Belum ada produk. Tambahkan jenis beras pertama.</div>';
+ $('saleProduct').innerHTML='<option value="">Pilih produk</option>'+db.products.map(p=>`<option value="${p.id}">${esc(p.name)} — stok ${p.stock} kg</option>`).join('');
+ $('purchaseProduct').innerHTML='<option value="">Pilih produk</option>'+db.products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+ $('purchaseHistory').innerHTML=db.purchases.length?db.purchases.slice().reverse().map(p=>`<div class="item"><div class="row"><div><b>${esc(p.receiptNo)}</b><div class="muted">${esc(p.date)} ${esc(p.time)} • ${esc(p.supplier||'Pemasok tidak dicatat')}</div><div class="muted">${esc(p.name)} • ${p.qty} kg</div></div><div style="text-align:right"><b>${rupiah(p.total)}</b><div class="actions"><button class="secondary" onclick="printReceipt('${p.id}')">Lihat / Cetak resi</button></div></div></div></div>`).join(''):'<div class="empty">Belum ada pembelian tercatat.</div>';
+ $('todaySales').innerHTML=ds.length?ds.slice().reverse().map(s=>saleLine(s)).join(''):'<div class="empty">Belum ada penjualan hari ini.</div>';
+ $('lowStock').innerHTML=db.products.filter(p=>p.stock<=10).map(p=>`<div class="row item"><span>${esc(p.name)}</span><b style="color:${p.stock<=0?'#b42318':'#9a6700'}">${p.stock} kg</b></div>`).join('')||'<div class="muted">Tidak ada stok yang menipis.</div>';
+ renderReport();
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function saleLine(s){return `<div class="item"><div class="row"><div><b>${esc(s.name)}</b><div class="muted">${s.qty} kg • ${s.time}</div></div><div style="text-align:right"><b>${rupiah(s.revenue)}</b><div class="muted green">Laba ${rupiah(s.profit)}</div></div></div></div>`}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));['home','stock','sale','report'].forEach(t=>$(t).classList.toggle('hidden',t!==b.dataset.tab));if(b.dataset.tab==='report')renderReport()}));
+$('addProduct').onclick=()=>{let name=$('pName').value.trim(),buy=+$('pBuy').value,sell=+$('pSell').value,qty=+$('pQty').value;if(!name||buy<=0||sell<=0||qty<0||$('pQty').value===''){alert('Lengkapi nama, harga beli, harga jual, dan stok.');return}db.products.push({id:Date.now().toString()+Math.random().toString(16).slice(2),name,buy,sell,stock:qty});persist();$('pName').value=$('pBuy').value=$('pSell').value=$('pQty').value='';render();alert('Produk berhasil disimpan.')};
+window.restock=id=>{let p=db.products.find(x=>x.id===id);let q=prompt('Jumlah stok masuk (kg):');if(q===null)return;q=Number(q);if(!Number.isFinite(q)||q<=0){alert('Jumlah tidak valid.');return}let price=prompt('Harga beli terbaru per kg (Rp):',p.buy);if(price===null)return;price=Number(price);if(!Number.isFinite(price)||price<=0){alert('Harga tidak valid.');return}p.buy=price;p.stock=+(p.stock+q).toFixed(2);persist();render()};
+window.editPrice=id=>{let p=db.products.find(x=>x.id===id);let b=prompt('Harga beli per kg (Rp):',p.buy);if(b===null)return;let s=prompt('Harga jual per kg (Rp):',p.sell);if(s===null)return;b=Number(b);s=Number(s);if(b<=0||s<=0){alert('Harga harus lebih dari nol.');return}p.buy=b;p.sell=s;persist();render()};
+window.removeProduct=id=>{if(!confirm('Hapus produk ini? Riwayat transaksi tetap tersimpan.'))return;db.products=db.products.filter(p=>p.id!==id);persist();render()};
+function previewPurchase(){let p=db.products.find(x=>x.id===$('purchaseProduct').value),q=+$('purchaseQty').value,price=+$('purchasePrice').value;if(!p){$('purchasePreview').textContent='Pilih produk dan isi jumlah untuk menghitung total pembelian.';return}$('purchasePreview').innerHTML=`Produk: <b>${esc(p.name)}</b><br>Total pembelian: <b>${rupiah(q*price)}</b><br>Stok saat ini: <b>${p.stock} kg</b> → setelah pembelian: <b>${(p.stock+q).toLocaleString('id-ID')} kg</b>`}
+$('purchaseProduct').onchange=()=>{let p=db.products.find(x=>x.id===$('purchaseProduct').value);$('purchasePrice').value=p?p.buy:'';previewPurchase()};
+$('purchaseQty').oninput=previewPurchase;$('purchasePrice').oninput=previewPurchase;
+$('savePurchase').onclick=()=>{let p=db.products.find(x=>x.id===$('purchaseProduct').value),q=+$('purchaseQty').value,price=+$('purchasePrice').value;if(!p||!Number.isFinite(q)||q<=0||!Number.isFinite(price)||price<=0){alert('Pilih produk, jumlah, dan harga beli yang valid.');return}let now=new Date(),entry={id:Date.now().toString(),receiptNo:'BA-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(db.purchases.length+1).padStart(3,'0'),supplier:$('supplier').value.trim(),name:p.name,productId:p.id,qty:q,buy:price,total:q*price,note:$('purchaseNote').value.trim(),date:today(),time:now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})};p.stock=+(p.stock+q).toFixed(2);p.buy=price;db.purchases.push(entry);persist();$('purchaseQty').value='';$('purchaseNote').value='';render();alert('Pembelian tersimpan. Resi dapat dilihat atau dicetak dari riwayat pembelian.');printReceipt(entry.id)};
+window.printReceipt=id=>{let p=db.purchases.find(x=>x.id===id);if(!p)return;let width=$('paperWidth')?.value||'58';let w=window.open('','_blank','width=420,height=650');if(!w){alert('Izinkan pop-up untuk mencetak resi.');return}w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Resi ${esc(p.receiptNo)}</title><style>
+@page{size:${width}mm auto;margin:0}
+*{box-sizing:border-box}
+html,body{width:${width}mm;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:11px;line-height:1.35;color:#000;padding:3mm 3mm 5mm}
+.center{text-align:center}.brand{font-size:17px;font-weight:800;letter-spacing:.5px;margin-bottom:2px}
+.heading{font-size:12px;font-weight:700}
+.line{border-top:1px dashed #000;margin:8px 0}
+.row{display:flex;justify-content:space-between;gap:5px;margin:5px 0}
+.row span:first-child{flex:1}.row span:last-child,.row b:last-child{text-align:right}
+.total{font-size:14px;font-weight:bold;margin-top:8px}
+.small{font-size:10px;overflow-wrap:anywhere}
+@media screen{body{margin:12px auto;box-shadow:0 0 5px #aaa;min-height:100mm}}
+</style></head><body>
+<div class="center"><div class="brand">BERKAH ALAM</div><div class="heading">RESI PEMBELIAN BERAS</div></div>
+<div class="line"></div><div class="small">No. Resi: ${esc(p.receiptNo)}</div><div class="small">Tanggal: ${esc(p.date)} ${esc(p.time)}</div><div class="small">Pemasok: ${esc(p.supplier||'-')}</div>
+<div class="line"></div><div class="row"><b>Produk</b><b>${esc(p.name)}</b></div><div class="row"><span>Jumlah</span><b>${p.qty} kg</b></div><div class="row"><span>Harga/kg</span><b>${rupiah(p.buy)}</b></div>
+<div class="line"></div><div class="row total"><span>TOTAL</span><span>${rupiah(p.total)}</span></div><div class="small">Catatan: ${esc(p.note||'-')}</div><div class="line"></div><div class="center">Terima kasih</div>
+<script>window.onload=()=>window.print()<\\/script></body></html>`);w.document.close()};
+function preview(){let p=db.products.find(x=>x.id===$('saleProduct').value),q=+$('saleQty').value;if(!p){$('salePreview').textContent='Pilih produk untuk melihat total penjualan dan perkiraan laba.';return}$('salePreview').innerHTML=`Stok tersedia: <b>${p.stock} kg</b><br>Total penjualan: <b>${rupiah(p.sell*q)}</b><br>Perkiraan laba kotor: <b class="green">${rupiah((p.sell-p.buy)*q)}</b>`}
+$('saleProduct').onchange=preview;$('saleQty').oninput=preview;
+$('saveSale').onclick=()=>{let p=db.products.find(x=>x.id===$('saleProduct').value),q=+$('saleQty').value;if(!p||!Number.isFinite(q)||q<=0||q>p.stock){alert('Pilih produk dan masukkan jumlah yang valid (tidak melebihi stok).');return}let s={id:Date.now().toString(),productId:p.id,name:p.name,qty:q,buy:p.buy,sell:p.sell,cost:p.buy*q,revenue:p.sell*q,profit:(p.sell-p.buy)*q,date:today(),time:new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})};p.stock=+(p.stock-q).toFixed(2);db.sales.push(s);persist();$('saleQty').value=1;preview();render();alert('Penjualan berhasil dicatat.')};
+$('reportDate').value=today();$('reportDate').onchange=renderReport;
+function renderReport(){let date=$('reportDate').value||today(),arr=daySales(date);$('rRevenue').textContent=rupiah(sum(arr,'revenue'));$('rCost').textContent=rupiah(sum(arr,'cost'));$('rProfit').textContent=rupiah(sum(arr,'profit'));$('rQty').textContent=arr.reduce((a,s)=>a+s.qty,0).toLocaleString('id-ID')+' kg';$('reportSales').innerHTML=arr.length?arr.map(s=>saleLine(s)).join(''):'<div class="empty">Tidak ada transaksi pada tanggal ini.</div>'}
+$('exportCsv').onclick=()=>{let date=$('reportDate').value||today(),arr=daySales(date),rows=[['Tanggal','Jam','Produk','Jumlah kg','Harga beli/kg','Harga jual/kg','Modal','Omzet','Laba kotor'],...arr.map(s=>[s.date,s.time,s.name,s.qty,s.buy,s.sell,s.cost,s.revenue,s.profit])];let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');download('\ufeff'+csv,'rekap-berkah-alam-'+date+'.csv','text/csv;charset=utf-8');};
+$('backup').onclick=()=>download(JSON.stringify(db,null,2),'cadangan-berkah-alam-'+today()+'.json','application/json');
+$('restoreFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let x=JSON.parse(await f.text());if(!Array.isArray(x.products)||!Array.isArray(x.sales))throw Error();if(confirm('Pulihkan cadangan? Data saat ini akan diganti.')){db=x;persist();render();alert('Data berhasil dipulihkan.')}}catch(err){alert('File cadangan tidak valid.')}e.target.value=''};
+function download(content,name,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+render();
+</script>
+</body></html>

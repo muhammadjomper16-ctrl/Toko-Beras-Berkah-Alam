@@ -1,0 +1,16 @@
+TOKO BERAS BERKAH ALAM - PAKET WEB
+
+Isi:
+- index.html: aplikasi kasir dan stok
+- manifest.webmanifest: identitas aplikasi web
+- service-worker.js: cache agar aplikasi dapat dibuka kembali saat offline setelah pertama kali dimuat
+- icon-192.png dan icon-512.png: ikon aplikasi
+
+PENTING:
+1. Unggah SELURUH isi folder ini ke layanan hosting statis yang mendukung HTTPS.
+2. Buka alamat HTTPS hasil hosting di Safari pada iPhone.
+3. Di Safari pilih Bagikan > Tambahkan ke Layar Utama.
+4. Data transaksi saat ini disimpan di penyimpanan browser pada perangkat tersebut.
+   Gunakan fitur Backup Data secara rutin. Data belum tersinkron otomatis antarperangkat.
+5. Cetak resi tetap menggunakan dialog cetak browser; printer Bluetooth thermal belum tentu
+   dapat mencetak langsung dari Safari. Kompatibilitas bergantung pada printer dan dukungan AirPrint.
